@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber Snake 👾</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        
+        body { 
+            background-color: #080511; 
+            color: white; 
+            text-align: center; 
+            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(123, 44, 191, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(123, 44, 191, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            from { background-position: 0 0; }
+            to { background-position: 0 400px; }
+        }
+
+        /* Nav estilizada e flutuante */
+        .navbar { 
+            background: rgba(22, 18, 36, 0.8); 
+            backdrop-filter: blur(10px);
+            padding: 1.2rem 2rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 2px solid #7b2cbf;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+        .navbar a { 
+            color: #e0aaff; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-size: 1.1rem; 
+            transition: all 0.3s;
+        }
+        .navbar a:hover {
+            color: #ff007f;
+            text-shadow: 0 0 10px #ff007f;
+        }
+        .score-box { 
+            background: linear-gradient(135deg, #3c096c, #161224); 
+            padding: 0.5rem 1.5rem; 
+            border-radius: 20px; 
+            border: 2px solid #7b2cbf; 
+            font-weight: bold; 
+            color: #fff; 
+            text-shadow: 0 0 8px #ff007f;
+            box-shadow: inset 0 0 10px rgba(255, 0, 127, 0.3);
+        }
+        
+        h2 { margin: 2rem 0 0.5rem; color: #e0aaff; text-shadow: 0 0 15px #7b2cbf; font-size: 2.5rem; letter-spacing: 2px; }
+        p { margin-bottom: 1.5rem; color: #b3a7d4; font-size: 1rem; }
+        
+        /* Container centralizado com efeito neon */
+        .container { 
+            position: relative; 
+            width: 408px; 
+            height: 408px; 
+            margin: 0 auto; 
+        }
+        
+        canvas { 
+            background: #0d0a1b; 
+            border: 4px solid #7b2cbf; 
+            border-radius: 16px; 
+            box-shadow: 0 0 35px rgba(123, 44, 191, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.8); 
+        }
+        
+        /* Tela de Game Over estilizada estilo Arcade */
+        .game-over-screen { 
+            display: none; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(10, 6, 22, 0.96); 
+            border-radius: 12px; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            border: 2px solid #ff007f;
+            box-shadow: 0 0 40px rgba(255, 0, 127, 0.5);
+            animation: pulseGameOver 2s infinite alternate;
+        }
+
+        @keyframes pulseGameOver {
+            from { border-color: #ff007f; }
+            to { border-color: #7b2cbf; }
+        }
+
+        .game-over-screen h3 { 
+            color: #ff007f; 
+            font-size: 28px; 
+            margin-bottom: 15px; 
+            text-shadow: 0 0 15px #ff007f; 
+            font-weight: 900;
+            letter-spacing: 3px;
+        }
+        .game-over-screen p { 
+            color: #fff; 
+            font-size: 22px; 
+            margin-bottom: 25px; 
+            text-shadow: 0 0 5px #9d4ede;
+        }
+        
+        .retry-btn { 
+            background: linear-gradient(90deg, #7b2cbf, #b5179e); 
+            color: white; 
+            border: none; 
+            padding: 0.8rem 2.5rem; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 1.1rem;
+            cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            box-shadow: 0 5px 20px rgba(181, 23, 158, 0.5);
+            text-transform: uppercase;
+        }
+        .retry-btn:hover { 
+            transform: scale(1.08); 
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.8); 
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/">⬅️ MENU PRINCIPAL</a>
+        <div class="score-box">SCORE: <span id="score">000</span></div>
+    </nav>
+
+    <h2>Cyber Snake</h2>
+    <p>Use as setas para guiar o feixe de dados neon pela matriz.</p>
+
+    <div class="container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div class="game-over-screen" id="gameOverScreen">
+            <h3>NÚCLEO CORROMPIDO</h3>
+            <p>Pontuação Final: <span id="finalScore">0</span></p>
+            <button class="retry-btn" onclick="restartGame()">Reiniciar Matriz</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const grid = 20;
+        let count = 0;
+        let score = 0;
+        let gameActive = true;
+
+        let snake = { x: 160, y: 160, dx: grid, dy: 0, cells: [], maxCells: 4 };
+        let apple = { x: 320, y: 320 };
+
+        function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min)) + min; }
+
+        function loop() {
+            if (!gameActive) return;
+            requestAnimationFrame(loop);
+            
+            let speedDivider = score >= 150 ? 3 : (score >= 80 ? 4 : 5);
+            if (++count < speedDivider) return; 
+            count = 0;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            snake.x += snake.dx;
+            snake.y += snake.dy;
+
+            if (snake.x < 0 || snake.x >= canvas.width || snake.y < 0 || snake.y >= canvas.height) endGame();
+
+            snake.cells.unshift({ x: snake.x, y: snake.y });
+            if (snake.cells.length > snake.maxCells) snake.cells.pop();
+
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#ff007f';
+            ctx.fillStyle = '#ff007f';
+            ctx.beginPath();
+            ctx.arc(apple.x + grid/2, apple.y + grid/2, (grid/2) - 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
+
+            snake.cells.forEach(function (cell, index) {
+                if (index === 0) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#00f5ff';
+                } else {
+                    ctx.fillStyle = index % 2 === 0 ? '#b5179e' : '#7b2cbf';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#7b2cbf';
+                }
+                
+                ctx.beginPath();
+                ctx.roundRect(cell.x + 1, cell.y + 1, grid - 2, grid - 2, 4);
+                ctx.fill();
+                ctx.closePath();
+
+                if (cell.x === apple.x && cell.y === apple.y) {
+                    snake.maxCells++;
+                    score += 10;
+                    document.getElementById('score').innerText = String(score).padStart(3, '0');
+                    apple.x = getRandomInt(0, 20) * grid;
+                    apple.y = getRandomInt(0, 20) * grid;
+                }
+                
+                for (let i = index + 1; i < snake.cells.length; i++) {
+                    if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) endGame();
+                }
+            });
+            
+            ctx.shadowBlur = 0;
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById("finalScore").innerText = score;
+            document.getElementById("gameOverScreen").style.display = "flex";
+        }
+
+        function restartGame() {
+            snake.x = 160; snake.y = 160; snake.cells = []; snake.maxCells = 4;
+            snake.dx = grid; snake.dy = 0; score = 0;
+            document.getElementById('score').innerText = "000";
+            apple.x = getRandomInt(0, 20) * grid; apple.y = getRandomInt(0, 20) * grid;
+            document.getElementById("gameOverScreen").style.display = "none";
+            gameActive = true;
+            requestAnimationFrame(loop);
+        }
+
+        document.addEventListener('keydown', function (e) {
+            if (!gameActive) return;
+            const leftKey = 37, upKey = 38, rightKey = 39, downKey = 40;
+            
+            if (e.which === leftKey && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+            else if (e.which === upKey && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+            else if (e.which === rightKey && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+            else if (e.which === downKey && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+        });
+
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>
