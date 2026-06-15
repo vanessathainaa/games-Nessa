@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory Hack 🧠</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #0d0a14; color: white; text-align: center; }
+        .navbar { background-color: #161224; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #7b2cbf; }
+        .navbar a { color: #e0aaff; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        
+        h2 { margin: 2rem 0 0.5rem; color: #e0aaff; text-shadow: 0 0 10px #7b2cbf; font-size: 2.2rem; }
+        p { margin-bottom: 2rem; color: #b3a7d4; }
+        
+        /* Grid das Cartas */
+        .memory-game {
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            grid-gap: 12px;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            perspective: 1000px;
+        }
+        
+        .card {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        
+        .card:active { transform: scale(0.95); transition: transform .1s; }
+        .card.flip { transform: rotateY(180deg); }
+        
+        .front, .back {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            border-radius: 8px;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 2px solid #5a189a;
+        }
+        
+        /* Verso da carta (Roxo escuro com brilho) */
+        .back {
+            background: linear-gradient(145deg, #1b1635, #110d24);
+            color: #7b2cbf;
+            text-shadow: 0 0 8px #9d4ede;
+        }
+        
+        /* Frente da carta virada (Rosa/Magenta) */
+        .front {
+            background-color: #241c44;
+            border-color: #ff007f;
+            color: #ff007f;
+            text-shadow: 0 0 12px #ff007f;
+            transform: rotateY(180deg);
+        }
+
+        .reset-btn { 
+            background: linear-gradient(90deg, #7b2cbf, #b5179e); 
+            color: white; border: none; padding: 0.8rem 2rem; border-radius: 8px; 
+            font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s; 
+            box-shadow: 0 4px 15px rgba(123, 44, 191, 0.4);
+        }
+        .reset-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(181, 23, 158, 0.5); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/">⬅ Voltar ao Menu</a>
+    </nav>
+
+    <h2>Memory Hack</h2>
+    <p>Encontre os pares de símbolos idênticos na memória de dados.</p>
+
+    <div class="memory-game" id="game-board">
+        <!-- As cartas serão geradas dinamicamente via JavaScript aqui -->
+    </div>
+
+    <button class="reset-btn" onclick="startGame()">Reiniciar Grade</button>
+
+    <script>
+        const icons = ['👾', '🔮', '🚀', '💎', '🔑', '🔋', '⚙️', '🛸'];
+        // Duplica os ícones para formar os pares obrigatórios
+        let cardData = [...icons, ...icons]; 
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function startGame() {
+            const board = document.getElementById('game-board');
+            board.innerHTML = ''; // Limpa o tabuleiro
+            shuffle(cardData);
+            
+            // Cria os elementos HTML das cartas dinamicamente
+            cardData.forEach((icon) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.icon = icon;
+                
+                card.innerHTML = `
+                    <div class="front">${icon}</div>
+                    <div class="back">?</div>
+                `;
+                
+                card.addEventListener('click', flipCard);
+                board.appendChild(card);
+            });
+            resetBoardVars();
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            this.classList.add('flip');
+
+            if (!hasFlippedCard) {
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+
+            secondCard = this;
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.icon === secondCard.dataset.icon;
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            resetBoardVars();
+        }
+
+        function unflipCards() {
+            lockBoard = true;
+            setTimeout(() => {
+                firstCard.classList.remove('flip');
+                secondCard.classList.remove('flip');
+                resetBoardVars();
+            }, 1000);
+        }
+
+        function resetBoardVars() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        // Inicia o jogo automaticamente ao carregar a página
+        startGame();
+    </script>
+</body>
+</html>

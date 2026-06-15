@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber Jumper 🍄</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background-color: #0d0a14;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .navbar {
+            background-color: #161224;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #7b2cbf;
+        }
+
+        .navbar a,
+        .btn-sidebar {
+            color: #e0aaff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .btn-sidebar:hover {
+            color: #ff007f;
+            text-shadow: 0 0 5px #ff007f;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .score-box {
+            background-color: #3c096c;
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            border: 1px solid #7b2cbf;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 5px #ff007f;
+        }
+
+        h2 {
+            margin: 1.5rem 0 0.5rem;
+            color: #e0aaff;
+            text-shadow: 0 0 10px #7b2cbf;
+            font-size: 2.2rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #b3a7d4;
+        }
+
+        .container {
+            position: relative;
+            width: 800px;
+            height: 450px;
+            margin: 0 auto;
+        }
+
+        canvas {
+            background: linear-gradient(to bottom, #110d24, #070412);
+            border: 4px solid #7b2cbf;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(123, 44, 191, 0.5);
+        }
+
+        .controls-info {
+            font-size: 0.85rem;
+            color: #8a7fa6;
+            margin-top: 8px;
+        }
+
+        .game-over-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 10, 20, 0.95);
+            border-radius: 12px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .game-over-screen h3 {
+            color: #ff007f;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #ff007f;
+        }
+
+        .game-over-screen p {
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 25px;
+        }
+
+        .retry-btn {
+            background: linear-gradient(90deg, #7b2cbf, #b5179e);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(123, 44, 191, 0.4);
+            text-transform: uppercase;
+        }
+
+        .retry-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(181, 23, 158, 0.6);
+        }
+
+        /* PAINEL LATERAL (SIDEBAR) RETRÁTIL */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -260px;
+            /* Escondido inicialmente */
+            width: 260px;
+            height: 100%;
+            background-color: #161224;
+            border-left: 2px solid #7b2cbf;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.7);
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 2rem 1.5rem;
+            text-align: left;
+            z-index: 10;
+        }
+
+        .sidebar.open {
+            right: 0;
+            /* Desliza para dentro da tela */
+        }
+
+        .sidebar h3 {
+            color: #e0aaff;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            border-bottom: 1px solid #3c096c;
+            padding-bottom: 0.5rem;
+            text-shadow: 0 0 5px #7b2cbf;
+        }
+
+        .level-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            max-height: calc(100% - 80px);
+            overflow-y: auto;
+        }
+
+        .level-item {
+            padding: 0.6rem 1rem;
+            background-color: #1f1a3a;
+            border-radius: 6px;
+            border: 1px solid #3c096c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .level-item.passed {
+            border-color: #00ffcc;
+            background-color: #112424;
+            color: #00ffcc;
+        }
+
+        .level-item.current {
+            border-color: #ff007f;
+            background-color: #241120;
+            color: #ff007f;
+            font-weight: bold;
+            box-shadow: 0 0 8px rgba(255, 0, 127, 0.4);
+        }
+
+        .close-sidebar {
+            display: block;
+            margin-bottom: 1.5rem;
+            color: #8a7fa6;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .close-sidebar:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/">⬅️ Voltar ao Menu</a>
+        <div class="nav-right">
+            <div class="score-box">NÍVEL: <span id="level-display">1</span> | MOEDAS: <span id="score">000</span></div>
+            <button class="btn-sidebar" onclick="toggleSidebar()">📋 Ver Fases</button>
+        </div>
+    </nav>
+
+    <h2>Cyber Jumper</h2>
+    <p>Pule pelas plataformas digitais e colete todas as moedas de plasma!</p>
+
+    <div class="container">
+        <canvas id="marioCanvas" width="800" height="450"></canvas>
+        <div class="game-over-screen" id="gameOverScreen">
+            <h3 id="game-status-title">FALHA DE SISTEMA</h3>
+            <p id="game-status-desc">Moedas Drenadas: <span id="finalScore">0</span></p>
+            <button class="retry-btn" id="retry-button-text" onclick="restartGame()">Reiniciar Fase</button>
+        </div>
+    </div>
+    <div class="controls-info">Controles: Setas (←) (→) para Correr | Seta para Cima (↑) ou Espaço para Pular</div>
+
+    <!-- Interface Visual da Gaveta de Fases -->
+    <div class="sidebar" id="levelSidebar">
+        <button class="close-sidebar" onclick="toggleSidebar()">❌ Fechar Painel</button>
+        <h3>Progresso da Matriz</h3>
+        <ul class="level-list" id="levelContainer">
+            <!-- Gerado via JS dinamicamente -->
+        </ul>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("marioCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let score = 0;
+        let currentLevel = 1;
+        let gameActive = true;
+        const heroiEscolhido = localStorage.getItem('selectedCharacter') || 'menino';
+
+        const player = { x: 80, y: 300, width: 32, height: 32, speed: 5, velX: 0, velY: 0, jumping: false, grounded: false };
+        const gravity = 0.35; // Calibrado: Gravidade menor para o pulo voar mais alto
+        const friction = 0.8;
+
+        // BANCO DE DADOS COMPLETO CORRIGIDO (NÍVEIS 1 AO 12)
+        const levels = {
+            1: { platforms: [{ x: 0, y: 410, width: 800, height: 40 }, { x: 200, y: 310, width: 120, height: 15 }, { x: 400, y: 230, width: 150, height: 15 }, { x: 150, y: 150, width: 130, height: 15 }, { x: 600, y: 320, width: 120, height: 15 }], coins: [{ x: 250, y: 270, radius: 8, collected: false }, { x: 470, y: 190, radius: 8, collected: false }, { x: 210, y: 110, radius: 8, collected: false }, { x: 650, y: 280, radius: 8, collected: false }] },
+            2: { platforms: [{ x: 0, y: 410, width: 250, height: 40 }, { x: 550, y: 410, width: 250, height: 40 }, { x: 300, y: 330, width: 200, height: 15 }, { x: 100, y: 240, width: 120, height: 15 }, { x: 580, y: 240, width: 120, height: 15 }, { x: 340, y: 150, width: 120, height: 15 }], coins: [{ x: 400, y: 290, radius: 8, collected: false }, { x: 160, y: 200, radius: 8, collected: false }, { x: 640, y: 200, radius: 8, collected: false }, { x: 400, y: 100, radius: 8, collected: false }] },
+            3: { platforms: [{ x: 0, y: 410, width: 150, height: 40 }, { x: 220, y: 340, width: 90, height: 15 }, { x: 360, y: 270, width: 90, height: 15 }, { x: 500, y: 200, width: 90, height: 15 }, { x: 640, y: 130, width: 120, height: 15 }, { x: 80, y: 180, width: 90, height: 15 }], coins: [{ x: 265, y: 300, radius: 8, collected: false }, { x: 405, y: 230, radius: 8, collected: false }, { x: 545, y: 160, radius: 8, collected: false }, { x: 700, y: 90, radius: 8, collected: false }, { x: 125, y: 140, radius: 8, collected: false }] },
+            4: { platforms: [{ x: 0, y: 410, width: 180, height: 40 }, { x: 280, y: 330, width: 100, height: 15 }, { x: 480, y: 260, width: 100, height: 15 }, { x: 680, y: 190, width: 120, height: 40 }, { x: 400, y: 120, width: 150, height: 15 }], coins: [{ x: 330, y: 280, radius: 8, collected: false }, { x: 530, y: 210, radius: 8, collected: false }, { x: 740, y: 140, radius: 8, collected: false }, { x: 475, y: 80, radius: 8, collected: false }] },
+            5: { platforms: [{ x: 0, y: 410, width: 800, height: 40 }, { x: 50, y: 300, width: 140, height: 15 }, { x: 240, y: 220, width: 140, height: 15 }, { x: 430, y: 150, width: 140, height: 15 }, { x: 620, y: 110, width: 140, height: 15 }], coins: [{ x: 120, y: 250, radius: 8, collected: false }, { x: 310, y: 170, radius: 8, collected: false }, { x: 500, y: 100, radius: 8, collected: false }, { x: 690, y: 60, radius: 8, collected: false }] },
+            6: { platforms: [{ x: 0, y: 410, width: 100, height: 40 }, { x: 170, y: 340, width: 50, height: 15 }, { x: 300, y: 270, width: 50, height: 15 }, { x: 430, y: 210, width: 50, height: 15 }, { x: 560, y: 150, width: 50, height: 15 }, { x: 680, y: 110, width: 120, height: 40 }], coins: [{ x: 195, y: 290, radius: 8, collected: false }, { x: 325, y: 220, radius: 8, collected: false }, { x: 455, y: 160, radius: 8, collected: false }, { x: 585, y: 100, radius: 8, collected: false }, { x: 740, y: 60, radius: 8, collected: false }] },
+            7: { platforms: [{ x: 0, y: 410, width: 200, height: 40 }, { x: 260, y: 300, width: 60, height: 15 }, { x: 400, y: 300, width: 60, height: 15 }, { x: 540, y: 300, width: 60, height: 15 }, { x: 660, y: 210, width: 140, height: 15 }], coins: [{ x: 290, y: 250, radius: 8, collected: false }, { x: 430, y: 250, radius: 8, collected: false }, { x: 570, y: 250, radius: 8, collected: false }, { x: 730, y: 160, radius: 8, collected: false }] },
+            8: { platforms: [{ x: 0, y: 410, width: 120, height: 40 }, { x: 200, y: 380, width: 80, height: 15 }, { x: 340, y: 320, width: 80, height: 15 }, { x: 480, y: 260, width: 80, height: 15 }, { x: 620, y: 200, width: 180, height: 15 }, { x: 200, y: 150, width: 300, height: 15 }], coins: [{ x: 240, y: 330, radius: 8, collected: false }, { x: 380, y: 270, radius: 8, collected: false }, { x: 520, y: 210, radius: 8, collected: false }, { x: 350, y: 100, radius: 8, collected: false }] },
+            9: {
+                // NÍVEL 9 CORRIGIDO: Plataformas rebaixadas de y:120 para y:160 para o pulo alcançar perfeitamente!
+                platforms: [
+                    { x: 0, y: 410, width: 800, height: 40 },
+                    { x: 100, y: 160, width: 80, height: 15 },
+                    { x: 350, y: 160, width: 80, height: 15 },
+                    { x: 600, y: 160, width: 80, height: 15 },
+                    { x: 220, y: 270, width: 120, height: 15 },
+                    { x: 470, y: 270, width: 120, height: 15 }
+                ],
+                coins: [
+                    { x: 140, y: 110, radius: 8, collected: false },
+                    { x: 390, y: 110, radius: 8, collected: false },
+                    { x: 640, y: 110, radius: 8, collected: false },
+                    { x: 280, y: 220, radius: 8, collected: false },
+                    { x: 530, y: 220, radius: 8, collected: false }
+                ]
+            },
+            10: { platforms: [{ x: 0, y: 410, width: 100, height: 40 }, { x: 700, y: 410, width: 100, height: 40 }, { x: 160, y: 320, width: 140, height: 15 }, { x: 500, y: 320, width: 140, height: 15 }, { x: 330, y: 220, width: 140, height: 15 }], coins: [{ x: 230, y: 270, radius: 8, collected: false }, { x: 570, y: 270, radius: 8, collected: false }, { x: 400, y: 170, radius: 8, collected: false }] },
+            11: { platforms: [{ x: 0, y: 410, width: 150, height: 40 }, { x: 200, y: 350, width: 40, height: 15 }, { x: 300, y: 290, width: 40, height: 15 }, { x: 400, y: 230, width: 40, height: 15 }, { x: 500, y: 170, width: 40, height: 15 }, { x: 600, y: 240, width: 200, height: 15 }], coins: [{ x: 220, y: 300, radius: 8, collected: false }, { x: 320, y: 240, radius: 8, collected: false }, { x: 420, y: 180, radius: 8, collected: false }, { x: 520, y: 120, radius: 8, collected: false }, { x: 700, y: 190, radius: 8, collected: false }] },
+            12: { platforms: [{ x: 0, y: 410, width: 80, height: 40 }, { x: 720, y: 410, width: 80, height: 40 }, { x: 140, y: 320, width: 50, height: 15 }, { x: 260, y: 240, width: 50, height: 15 }, { x: 380, y: 160, width: 50, height: 15 }, { x: 500, y: 240, width: 50, height: 15 }, { x: 620, y: 320, width: 50, height: 15 }], coins: [{ x: 165, y: 270, radius: 8, collected: false }, { x: 285, y: 190, radius: 8, collected: false }, { x: 405, y: 110, radius: 8, collected: false }, { x: 525, y: 190, radius: 8, collected: false }, { x: 645, y: 270, radius: 8, collected: false }] }
+        };
+
+        let activePlatforms = [...levels[currentLevel].platforms];
+        let activeCoins = JSON.parse(JSON.stringify(levels[currentLevel].coins));
+
+        let keys = {};
+        document.addEventListener("keydown", (e) => {
+            if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
+                e.preventDefault();
+            }
+            keys[e.code] = true;
+        });
+        document.addEventListener("keyup", (e) => {
+            if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
+                e.preventDefault();
+            }
+            keys[e.code] = false;
+        });
+
+        // CONTROLE VISUAL DA GAVETA LATERAL DE FASES
+        function toggleSidebar() {
+            const sidebar = document.getElementById("levelSidebar");
+            sidebar.classList.toggle("open");
+            if (sidebar.classList.contains("open")) {
+                updateSidebarUI();
+            }
+        }
+
+        function updateSidebarUI() {
+            const container = document.getElementById("levelContainer");
+            container.innerHTML = "";
+
+            for (let i = 1; i <= 12; i++) {
+                const li = document.createElement("li");
+                li.className = "level-item";
+
+                let statusIcon = "🔒";
+                if (i < currentLevel) {
+                    li.classList.add("passed");
+                    statusIcon = "✅";
+                } else if (i === currentLevel) {
+                    li.classList.add("current");
+                    statusIcon = "🏃‍♂️";
+                }
+
+                li.innerHTML = `<span>Fase ${i}</span> <span>${statusIcon}</span>`;
+                container.appendChild(li);
+            }
+        }
+
+        // RENDERIZAÇÃO DOS PERSONAGENS SEM TRAVAMENTO
+        function drawPixelPlayer(x, y) {
+            ctx.save();
+            ctx.shadowBlur = 10;
+            if (heroiEscolhido === 'menino') {
+                ctx.shadowColor = "#e63946"; ctx.fillStyle = "#e63946"; ctx.fillRect(x, y + 10, 32, 22);
+                ctx.fillStyle = "#fcd5be"; ctx.fillRect(x + 4, y, 24, 14);
+                ctx.fillStyle = "#221a24"; ctx.fillRect(x + 4, y, 24, 5);
+            } else {
+                ctx.shadowColor = "#cf4ca2"; ctx.fillStyle = "#cf4ca2"; ctx.fillRect(x, y + 10, 32, 22);
+                ctx.fillStyle = "#632c38"; ctx.fillRect(x, y, 32, 14);
+                ctx.fillStyle = "#fcd5be"; ctx.fillRect(x + 6, y + 3, 20, 11);
+            }
+            ctx.restore();
+        }
+
+        function colCheck(shapeA, shapeB) {
+            let vX = (shapeA.x + (shapeA.width / 2)) - (shapeB.x + (shapeB.width / 2)),
+                vY = (shapeA.y + (shapeA.height / 2)) - (shapeB.y + (shapeB.height / 2)),
+                hWidths = (shapeA.width / 2) + (shapeB.width / 2),
+                hHeights = (shapeA.height / 2) + (shapeB.height / 2),
+                colDir = null;
+
+            if (Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+                let oX = hWidths - Math.abs(vX), oY = hHeights - Math.abs(vY);
+                if (oX >= oY) {
+                    if (vY > 0) { colDir = "t"; shapeA.y += oY; } else { colDir = "b"; shapeA.y -= oY; }
+                } else {
+                    if (vX > 0) { colDir = "l"; shapeA.x += oX; } else { colDir = "r"; shapeA.x -= oX; }
+                }
+            }
+            return colDir;
+        }
+
+        function advanceLevel() {
+            currentLevel++;
+            updateSidebarUI();
+
+            if (levels[currentLevel]) {
+                document.getElementById("level-display").innerText = currentLevel;
+                activePlatforms = [...levels[currentLevel].platforms];
+                activeCoins = JSON.parse(JSON.stringify(levels[currentLevel].coins));
+                player.x = 80; player.y = 300; player.velX = 0; player.velY = 0;
+            } else {
+                gameActive = false;
+                document.getElementById("game-status-title").innerText = "SISTEMA ZERADO!";
+                document.getElementById("game-status-title").style.color = "#00ffcc";
+                document.getElementById("game-status-desc").innerHTML = `🏆 Lendário! Você superou todos os 12 níveis e completou o jogo!`;
+                document.getElementById("retry-button-text").innerText = "Jogar Novamente";
+                document.getElementById("gameOverScreen").style.display = "flex";
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+            if (keys["ArrowRight"]) { if (player.velX < player.speed) player.velX++; }
+            if (keys["ArrowLeft"]) { if (player.velX > -player.speed) player.velX--; }
+
+            if ((keys["ArrowUp"] || keys["Space"]) && !player.jumping && player.grounded) {
+                player.jumping = true; player.grounded = false; player.velY = -player.speed * 2.3;
+            }
+
+            player.velX *= friction; player.velY += gravity; player.grounded = false;
+
+            for (let i = 0; i < activePlatforms.length; i++) {
+                let dir = colCheck(player, activePlatforms[i]);
+                if (dir === "l" || dir === "r") { player.velX = 0; }
+                else if (dir === "b") { player.grounded = true; player.jumping = false; player.velY = 0; }
+                else if (dir === "t") { player.velY = 0; }
+            }
+
+            player.x += player.velX; player.y += player.velY;
+            if (player.y > canvas.height) endGame();
+
+            activeCoins.forEach(coin => {
+                if (!coin.collected) {
+                    let pX = player.x + player.width / 2, pY = player.y + player.height / 2;
+                    let dist = Math.sqrt(Math.pow(pX - coin.x, 2) + Math.pow(pY - coin.y, 2));
+                    if (dist < coin.radius + player.width / 2) {
+                        coin.collected = true; score += 1;
+                        document.getElementById("score").innerText = String(score).padStart(3, '0');
+                        if (activeCoins.every(c => c.collected)) advanceLevel();
+                    }
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = currentLevel >= 7 ? "#2d1b36" : "#1e1a3a";
+            ctx.strokeStyle = currentLevel >= 7 ? "#ff007f" : "#7b2cbf";
+            ctx.lineWidth = 2;
+            activePlatforms.forEach(p => { ctx.fillRect(p.x, p.y, p.width, p.height); ctx.strokeRect(p.x, p.y, p.width, p.height); });
+
+            ctx.save(); ctx.shadowBlur = 12; ctx.shadowColor = "#ff007f"; ctx.fillStyle = "#ff007f";
+            activeCoins.forEach(coin => { if (!coin.collected) { ctx.beginPath(); ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2); ctx.fill(); ctx.closePath(); } });
+            ctx.restore();
+
+            drawPixelPlayer(player.x, player.y);
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById("game-status-title").innerText = "FALHA DE SISTEMA";
+            document.getElementById("game-status-title").style.color = "#ff007f";
+            document.getElementById("game-status-desc").innerHTML = `Moedas coletadas: <span id="finalScore">${score}</span>`;
+            document.getElementById("retry-button-text").innerText = "Reiniciar Fase";
+            document.getElementById("gameOverScreen").style.display = "flex";
+        }
+
+        function restartGame() {
+            score = 0; currentLevel = 1; player.x = 80; player.y = 300; player.velX = 0; player.velY = 0; player.jumping = false; player.grounded = false;
+            document.getElementById("level-display").innerText = currentLevel; document.getElementById("score").innerText = "000";
+            activePlatforms = [...levels[currentLevel].platforms]; activeCoins = JSON.parse(JSON.stringify(levels[currentLevel].coins));
+            document.getElementById("gameOverScreen").style.display = "none"; gameActive = true;
+            updateSidebarUI();
+        }
+
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+        gameLoop();
+        updateSidebarUI(); 
+    </script>
+</body>
+
+</html>

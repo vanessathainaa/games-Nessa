@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber Dodge 👾💻</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #0d0a14; color: white; text-align: center; }
+        .navbar { background-color: #161224; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #7b2cbf; }
+        .navbar a { color: #e0aaff; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+        .score-box { background-color: #3c096c; padding: 0.4rem 1.2rem; border-radius: 20px; border: 1px solid #7b2cbf; font-weight: bold; color: #fff; text-shadow: 0 0 5px #ff007f; }
+        
+        h2 { margin: 1.5rem 0 0.5rem; color: #e0aaff; text-shadow: 0 0 10px #7b2cbf; font-size: 2.2rem; }
+        p { margin-bottom: 1rem; color: #b3a7d4; }
+        
+        .container { position: relative; width: 500px; height: 600px; margin: 0 auto; }
+        canvas { 
+            background: #0d0a14; 
+            border: 4px solid #7b2cbf; 
+            border-radius: 12px; 
+            box-shadow: 0 0 25px rgba(123, 44, 191, 0.5); 
+        }
+        .controls-info { font-size: 0.85rem; color: #8a7fa6; margin-top: 5px; }
+
+        /* Tela de Game Over com pontuação e botão */
+        .game-over-screen { 
+            display: none; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(13, 10, 20, 0.95); 
+            border-radius: 12px; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .game-over-screen h3 { color: #ff007f; font-size: 26px; margin-bottom: 10px; text-shadow: 0 0 10px #ff007f; }
+        .game-over-screen p { color: #fff; font-size: 20px; margin-bottom: 25px; }
+        .retry-btn { 
+            background: linear-gradient(90deg, #7b2cbf, #b5179e); 
+            color: white; 
+            border: none; 
+            padding: 0.8rem 2rem; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            box-shadow: 0 4px 15px rgba(123, 44, 191, 0.4);
+        }
+        .retry-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(181, 23, 158, 0.6); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="/">⬅️ Abortar Missão</a>
+        <div class="score-box">PONTOS: <span id="score">000</span></div>
+    </nav>
+
+    <h2>Galactic Dodge</h2>
+    <p>Guie seu herói de pixel art e desvie das supernovas cósmicas!</p>
+
+    <div class="container">
+        <canvas id="dodgeCanvas" width="500" height="600"></canvas>
+        <div class="game-over-screen" id="gameOverScreen">
+            <h3>IMPACTO DETECTADO</h3>
+            <p>Pontuação Final: <span id="finalScore">0</span></p>
+            <button class="retry-btn" onclick="restartGame()">Reiniciar Motores</button>
+        </div>
+    </div>
+    <div class="controls-info">Controles: Use as Setas Esquerda (←) e Direita (→) para mover</div>
+
+    <script>
+        const canvas = document.getElementById("dodgeCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let score = 0;
+        let gameActive = true;
+        let rotationAngle = 0;
+
+        // Recupera qual gênero foi escolhido no menu inicial
+        const heroiEscolhido = localStorage.getItem('selectedCharacter') || 'menino';
+
+        const player = {
+            x: canvas.width / 2 - 24,
+            y: canvas.height - 85,
+            width: 48,
+            height: 48,
+            speed: 8
+        };
+
+        let obstacle = {
+            x: Math.floor(Math.random() * (canvas.width - 45)),
+            y: -40,
+            width: 45,
+            height: 45,
+            speed: 5
+        };
+
+        let keys = {};
+        document.addEventListener("keydown", (e) => { keys[e.code] = true; });
+        document.addEventListener("keyup", (e) => { keys[e.code] = false; });
+
+        // Desenha o personagem em Pixel Art baseado na escolha do menu
+        function drawSelectedPlayer(x, y) {
+            ctx.save();
+            let pixelMap = [];
+
+            if (heroiEscolhido === 'menino') {
+                // Configuração exata extraída da imagem do Menino que você enviou
+                const C = "#221a24"; // Cabelo e Sapato
+                const P = "#eab099"; // Pele (Rosto e Braço)
+                const J = "#e63946"; // Jaqueta Vermelha
+                const B = "#ffffff"; // Camiseta Branca
+                const L = "#06d6a0"; // Detalhe da Alça da Mochila
+                const A = "#3d3a45"; // Calça Cinza Escuro
+                const _ = null;      // Transparente
+
+                pixelMap = [
+                    [_,_,_,C,C,C,C,_,_,_,_,_],
+                    [_,_,C,C,C,C,C,C,_,_,_,_],
+                    [_,C,C,P,P,P,P,C,C,_,_,_],
+                    [_,C,P,B,P,P,B,P,C,_,_,_],
+                    [_,C,P,P,P,P,P,P,C,_,J,_], // Braço levantado acenando
+                    [_,_,C,P,P,C,C,P,_,J,J,_],
+                    [_,_,J,J,B,B,B,J,J,J,_,_],
+                    [_,J,J,L,B,B,B,J,J,_,_,_],
+                    [_,J,_,_,A,A,A,_,_,_,_,_],
+                    [_,_,_,_,A,_,A,_,_,_,_,_],
+                    [_,_,_,C,C,_,C,C,_,_,_,_],
+                    [_,_,_,C,C,_,C,C,_,_,_,_]
+                ];
+            } else {
+                // ESPAÇO RESERVADO PARA A MENINA
+                // Assim que você mandar a imagem, substituirei as cores e a matriz abaixo!
+                const C = "#4a2c11"; // Exemplo temporário: Cabelo Castanho
+                const P = "#eab099"; // Pele
+                const V = "#ff007f"; // Vestido Rosa Neon
+                const B = "#ffffff"; // Detalhes
+                const _ = null;
+
+                pixelMap = [
+                    [_,_,_,C,C,C,C,_,_,_,_,_],
+                    [_,_,C,C,C,C,C,C,_,_,_,_],
+                    [_,C,C,P,P,P,P,C,C,_,_,_],
+                    [_,C,P,B,P,P,B,P,C,_,_,_],
+                    [_,C,P,P,P,P,P,P,C,_,V,_],
+                    [_,_,C,P,P,C,C,P,_,V,V,_],
+                    [_,_,V,V,V,V,V,V,V,V,_,_],
+                    [_,V,V,V,V,V,V,V,V,_,_,_],
+                    [_,V,_,_,P,_,P,_,_,_,_,_],
+                    [_,_,_,_,P,_,P,_,_,_,_,_],
+                    [_,_,_,C,C,_,C,C,_,_,_,_],
+                    [_,_,_,C,C,_,C,C,_,_,_,_]
+                ];
+            }
+
+            const pixelSize = player.width / 12;
+
+            for (let row = 0; row < pixelMap.length; row++) {
+                for (let col = 0; col < pixelMap[row].length; col++) {
+                    let color = pixelMap[row][col];
+                    if (color) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(x + (col * pixelSize), y + (row * pixelSize), pixelSize + 0.3, pixelSize + 0.3);
+                    }
+                }
+            }
+            ctx.restore();
+        }
+
+        function drawSupernova(x, y, size) {
+            ctx.save();
+            let radius = size / 2;
+            let cx = x + radius; let cy = y + radius;
+            ctx.translate(cx, cy); ctx.rotate(rotationAngle);
+            ctx.shadowBlur = 25; ctx.shadowColor = "#7b2cbf";
+            ctx.fillStyle = "#ff007f";
+            for (let i = 0; i < 8; i++) {
+                ctx.rotate(Math.PI / 4); ctx.fillRect(-2, -radius - 4, 4, radius * 2 + 8);
+            }
+            let gradient = ctx.createRadialGradient(0, 0, 2, 0, 0, radius);
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(0.2, '#00f5ff');
+            gradient.addColorStop(0.6, '#7b2cbf');
+            gradient.addColorStop(1, 'rgba(13, 10, 20, 0)');
+            ctx.fillStyle = gradient; ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
+            ctx.restore();
+        }
+
+        function update() {
+            if (!gameActive) return;
+            if (keys["ArrowLeft"] && player.x > 0) player.x -= player.speed;
+            if (keys["ArrowRight"] && player.x < canvas.width - player.width) player.x += player.speed;
+
+            obstacle.y += obstacle.speed;
+            rotationAngle += 0.04;
+
+            if (obstacle.y > canvas.height) {
+                obstacle.y = -obstacle.height;
+                obstacle.x = Math.floor(Math.random() * (canvas.width - obstacle.width));
+                score += 10;
+                document.getElementById("score").innerText = String(score).padStart(3, '0');
+                if (score % 50 === 0) obstacle.speed += 1;
+            }
+
+            if (player.x + 6 < obstacle.x + obstacle.width && player.x + player.width - 6 > obstacle.x && player.y + 4 < obstacle.y + obstacle.height && player.y + player.height > obstacle.y) {
+                endGame();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSelectedPlayer(player.x, player.y);
+            drawSupernova(obstacle.x, obstacle.y, obstacle.width);
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById("finalScore").innerText = score;
+            document.getElementById("gameOverScreen").style.display = "flex";
+        }
+
+        function restartGame() {
+            score = 0; gameActive = true; rotationAngle = 0;
+            player.x = canvas.width / 2 - 24; obstacle.y = -40;
+            obstacle.x = Math.floor(Math.random() * (canvas.width - obstacle.width)); obstacle.speed = 5;
+            document.getElementById("score").innerText = "000";
+            document.getElementById("gameOverScreen").style.display = "none";
+        }
+
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+        gameLoop();
+    </script>
+</body>
+</html>
