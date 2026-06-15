@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purple Arcade - Selecione seu Jogo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        body {
+            background-color: #0d0a14;
+            color: #ffffff;
+        }
+
+        /* Nav estilizada em Roxo */
+        .navbar {
+            background-color: #161224;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(157, 78, 221, 0.2);
+            border-bottom: 2px solid #7b2cbf;
+        }
+
+        .navbar .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #e0aaff;
+            text-decoration: none;
+            text-shadow: 0 0 10px #9d4ede;
+        }
+
+        .navbar ul {
+            display: flex;
+            list-style: none;
+        }
+
+        .navbar ul li a {
+            color: #c8b6ff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        .navbar ul li a:hover {
+            color: #e0aaff;
+            text-shadow: 0 0 8px #9d4ede;
+        }
+
+        main {
+            padding: 4rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+            color: #e0aaff;
+            text-shadow: 0 0 15px #7b2cbf;
+        }
+
+        /* Grid de Jogos Customizados */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            justify-content: center;
+        }
+
+        .game-card {
+            background: linear-gradient(145deg, #1f1a3a, #161224);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #5a189a;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-card:hover {
+            transform: translateY(-12px);
+            border-color: #b5179e;
+            box-shadow: 0 12px 30px rgba(181, 23, 158, 0.4);
+        }
+
+        .game-info {
+            padding: 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 220px;
+        }
+
+        .game-title {
+            font-size: 1.6rem;
+            margin-bottom: 0.8rem;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .game-desc {
+            font-size: 1rem;
+            color: #b3a7d4;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        /* Botão Roxo Vibrante */
+        .play-btn {
+            background: linear-gradient(90deg, #7b2cbf, #b5179e);
+            color: #ffffff;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-align: center;
+            text-decoration: none;
+            transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(123, 44, 191, 0.4);
+        }
+
+        .play-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(181, 23, 158, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="logo">🔮 Purple Arcade</a>
+        <ul>
+            <li><a href="/">Início</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <h2>Escolha seu Desafio</h2>
+
+        <div class="games-grid">
+            <div class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Cyber Snake <img
+                                src="https://cdn-icons-png.flaticon.com/512/15624/15624907.png" width="40px" alt="">
+                        </h3>
+                        <p class="game-desc">Controle a serpente de dados neon em uma arena de alta velocidade. Colete
+                            os blocos roxos para expandir sua pontuação.</p>
+                    </div>
+                    <a href="/jogo/cobrinha" class="play-btn">Iniciar Jogo</a>
+                </div>
+            </div>
+
+            <!-- <div class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Neon Tic-Tac-Toe 🔮</h3>
+                        <p class="game-desc">Uma batalha galáctica de estratégia em turnos para 2 jogadores, iluminada
+                            por luzes de plasma roxas e rosas.</p>
+                    </div>
+                    <a href="/jogo/velha" class="play-btn">Iniciar Jogo</a>
+                </div>
+            </div> -->
+
+            <!-- Insira este bloco dentro da <div class="games-grid"> do seu index.html -->
+            <div class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Memory Hack
+                            <img src="https://images.vexels.com/media/users/3/235435/isolated/preview/8fa6198e62db17588eab3304ed095098-orgaos-no-cerebro-5.png"
+                                width="30px" alt="">
+                        </h3>
+                        <p class="game-desc">Treine sua mente decodificando e combinando os pares de runas neon antes
+                            que o tempo esgote.</p>
+                    </div>
+                    <a href="/jogo/memoria" class="play-btn">Iniciar Jogo</a>
+                </div>
+            </div>
+
+            <!-- Insira este bloco dentro da <div class="games-grid"> do seu index.html -->
+            <div class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Space Invaders <img
+                                src="https://images.emojiterra.com/google/noto-emoji/animated-emoji/1f680.gif"
+                                width="24" alt=""></h3>
+                        <p class="game-desc">Defenda a galáxia roxa contra hordas de invasores alienígenas de plasma
+                            neste clássico jogo de tiro.</p>
+                    </div>
+                    <a href="/jogo/invaders" class="play-btn">Iniciar Jogo</a>
+                </div>
+            </div>
+
+            <!-- Insira este bloco dentro da <div class="games-grid"> do seu index.html -->
+            <div class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Cyber Breakout 🧱</h3>
+                        <p class="game-desc">Rebata a esfera de plasma para quebrar as barreiras de segurança e
+                            descriptografar o sistema.</p>
+                    </div>
+                    <a href="/jogo/breakout" class="play-btn">Iniciar Jogo</a>
+                </div>
+            </div>
+
+
+            <!-- Procure o card do Cyber Dodge no seu index.html e mude para este formato padrão: -->
+            <div class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Cyber Dodge 🐍💻</h3>
+                        <p class="game-desc">A versão do motor de simulação Pygame reconstruída nativamente para a web.
+                            Desvie dos meteoros de plasma rosa.</p>
+                    </div>
+                    <a href="/jogo/cyber-dodge" class="play-btn">Iniciar Jogo</a>
+                </div>
+            </div>
+
+            <!-- Cole este bloco dentro da <div class="games-grid"> do seu index.html -->
+            <div class="game-card">
+                <div class="game-info">
+                    <div>
+                        <h3 class="game-title">Cyber Jumper 🍄🏃‍♂️</h3>
+                        <p class="game-desc">Um jogo de plataforma estilo Mario. Corra, pule em plataformas neon e
+                            colete moedas cósmicas com seu personagem escolhido.</p>
+                    </div>
+                    <a href="/jogo/mario" class="play-btn">Iniciar Jogo</a>
+                </div>
+            </div>
+
+
+
+            <!-- Procure a tag <script> correspondente ao Pygame no final do seu index.html e substitua por esta -->
+            <script>
+                function iniciarPygame() {
+                    const btn = event.target;
+                    const textoOriginal = btn.innerText;
+                    btn.innerText = "ABRINDO JANELA...";
+                    btn.disabled = true;
+
+                    fetch('/abrir-pygame', { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Pequeno intervalo para o usuário ver a transição antes do botão resetar
+                            setTimeout(() => {
+                                btn.innerText = textoOriginal;
+                                btn.disabled = false;
+                            }, 1500);
+                        })
+                        .catch(err => {
+                            alert("Erro ao iniciar o motor Pygame externo.");
+                            btn.innerText = textoOriginal;
+                            btn.disabled = false;
+                        });
+                }
+            </script>
+
+
+
+
+        </div>
+    </main>
+
+</body>
+
+</html>
